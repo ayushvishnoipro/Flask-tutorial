@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends , status , Response , HTTPException
+from typing import List
 import schemas
 import models
 from database import engine, SessionLocal
@@ -38,12 +39,12 @@ def update(id, request: schemas.Blog, db: Session = Depends(get_db)):
     db.commit()
     return "updated blog"
 
-@app.get("/blog")
+@app.get("/blog",response_model=List[schemas.Blog])
 def all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all()
     return blogs
 
-@app.get("/blog/{id}", status_code=200)
+@app.get("/blog/{id}", status_code=200,response_model=schemas.ShowBlog)
 def show(id,response:Response, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog:
@@ -52,3 +53,10 @@ def show(id,response:Response, db: Session = Depends(get_db)):
     return blog
 
  
+@app.post("/user",status_code=status.HTTP_201_CREATED)
+def create_user(request: schemas.Users, db: Session = Depends(get_db)):
+    new_user = models.Users(name=request.name, email=request.email, password=request.password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user

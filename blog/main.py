@@ -57,7 +57,7 @@ def show(id,response:Response, db: Session = Depends(get_db)):
 
 
 
-@app.post("/user",status_code=status.HTTP_201_CREATED)
+@app.post("/user",status_code=status.HTTP_201_CREATED,response_model=schemas.ShowUsers)
 def create_user(request: schemas.Users, db: Session = Depends(get_db)):
 
     new_user = models.Users(name=request.name, email=request.email, password=hashing.Hash.bcrypt(request.password))
@@ -65,3 +65,11 @@ def create_user(request: schemas.Users, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+@app.get("/user/{id}",status_code=200,response_model=schemas.ShowUsers)
+def get_user(id, response: Response, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found")
+    
+    return user

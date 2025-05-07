@@ -3,3 +3,5 @@ FastAPI
 pydantic
 fastapi-utils
 httpx
+passlib
+bcrypt
